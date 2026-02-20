@@ -154,7 +154,7 @@ export default function Home() {
                 <SealIcon size={56} />
               </div>
               <div>
-                <div className="text-2xl font-bold tracking-wide">FBI VAULT</div>
+                <div className="text-2xl font-bold tracking-wide">X-Files</div>
                 <div className="text-sm text-fbi-gold">Electronic Reading Room</div>
               </div>
             </div>
@@ -407,7 +407,7 @@ export default function Home() {
                   <SealIcon size={32} />
                 </div>
                 <div>
-                  <div className="font-bold">FBI VAULT</div>
+                  <div className="font-bold">X-Files</div>
                   <div className="text-xs text-gray-400">Electronic Reading Room</div>
                 </div>
               </div>
