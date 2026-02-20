@@ -1,11 +1,29 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import {
   DocumentIcon, FolderIcon, LockIcon, UnlockIcon, WarningIcon,
   EyeIcon, DownloadIcon, CalendarIcon, ArrowRightIcon, SealIcon
 } from '@/components/Icons';
+
+// Music Icon Components
+const MusicOnIcon: React.FC<{ size?: number; className?: string }> = ({ size = 24, className = '' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
+    <path d="M9 18V5l12-2v13" />
+    <circle cx="6" cy="18" r="3" />
+    <circle cx="18" cy="16" r="3" />
+  </svg>
+);
+
+const MusicOffIcon: React.FC<{ size?: number; className?: string }> = ({ size = 24, className = '' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
+    <path d="M9 18V5l12-2v13" />
+    <circle cx="6" cy="18" r="3" />
+    <circle cx="18" cy="16" r="3" />
+    <line x1="1" y1="1" x2="23" y2="23" strokeWidth="2" />
+  </svg>
+);
 
 // Case files data
 const caseFiles = [
@@ -168,8 +186,68 @@ export default function GamePage() {
   const [completedCases, setCompletedCases] = useState<number[]>([]);
   const [displayedText, setDisplayedText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  
+  // Background music state
+  const [isMusicPlaying, setIsMusicPlaying] = useState(false);
+  const [hasUserInteracted, setHasUserInteracted] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const currentSceneData = case1Scenes.find(s => s.id === currentScene);
+
+  // Initialize audio on mount
+  useEffect(() => {
+    audioRef.current = new Audio('/bgmusic.mp3');
+    audioRef.current.loop = true;
+    audioRef.current.volume = 1.0; // MAX VOLUME
+    
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    };
+  }, []);
+
+  // Autoplay music on first user interaction
+  useEffect(() => {
+    const handleFirstInteraction = () => {
+      if (!hasUserInteracted && audioRef.current) {
+        setHasUserInteracted(true);
+        audioRef.current.play().then(() => {
+          setIsMusicPlaying(true);
+        }).catch(err => {
+          console.log('Audio autoplay failed:', err);
+        });
+        document.removeEventListener('click', handleFirstInteraction);
+        document.removeEventListener('touchstart', handleFirstInteraction);
+        document.removeEventListener('keydown', handleFirstInteraction);
+      }
+    };
+
+    document.addEventListener('click', handleFirstInteraction);
+    document.addEventListener('touchstart', handleFirstInteraction);
+    document.addEventListener('keydown', handleFirstInteraction);
+
+    return () => {
+      document.removeEventListener('click', handleFirstInteraction);
+      document.removeEventListener('touchstart', handleFirstInteraction);
+      document.removeEventListener('keydown', handleFirstInteraction);
+    };
+  }, [hasUserInteracted]);
+
+  // Toggle music function
+  const toggleMusic = () => {
+    if (audioRef.current) {
+      if (isMusicPlaying) {
+        audioRef.current.pause();
+      } else {
+        audioRef.current.play().catch(err => {
+          console.log('Audio play failed:', err);
+        });
+      }
+      setIsMusicPlaying(!isMusicPlaying);
+    }
+  };
 
   // Typing effect
   useEffect(() => {
@@ -225,15 +303,36 @@ export default function GamePage() {
       <header className="bg-fbi-dark text-white">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-fbi-gold rounded-full flex items-center justify-center text-fbi-dark">
-              <SealIcon size={40} />
+            <div className="w-12 h-12 bg-fbi-blue/50 border-2 border-fbi-gold rounded-lg flex items-center justify-center overflow-hidden">
+              <img 
+                src="/logo.png" 
+                alt="Logo" 
+                className="w-full h-full object-contain"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                  e.currentTarget.parentElement!.innerHTML = '<span class="text-fbi-gold text-[8px] font-bold">LOGO</span>';
+                }}
+              />
             </div>
             <div>
-              <div className="text-xl font-bold">FBI VAULT</div>
+              <div className="text-xl font-bold">X-Files</div>
               <div className="text-xs text-fbi-gold">Case Files Division</div>
             </div>
           </Link>
           <div className="flex items-center gap-4 text-sm">
+            {/* Music Toggle */}
+            <button
+              onClick={toggleMusic}
+              className={`flex items-center gap-2 px-3 py-2 rounded border transition-all ${
+                isMusicPlaying 
+                  ? 'bg-fbi-gold/20 border-fbi-gold text-fbi-gold' 
+                  : 'bg-fbi-blue/30 border-fbi-blue text-gray-400 hover:border-fbi-gold hover:text-fbi-gold'
+              }`}
+              title={isMusicPlaying ? 'Pause Music' : 'Play Music'}
+            >
+              {isMusicPlaying ? <MusicOnIcon size={18} /> : <MusicOffIcon size={18} />}
+            </button>
+            
             <span className="text-gray-400">
               <DocumentIcon size={16} className="inline mr-1" />
               {completedCases.length}/8 Cases Complete

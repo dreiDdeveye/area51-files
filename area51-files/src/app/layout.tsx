@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import '@/styles/globals.css';
 
 export const metadata: Metadata = {
-  title: 'FBI VAULT - Unidentified Aerial Phenomena',
+  title: 'X-Files - Unidentified Aerial Phenomena',
   description: 'Freedom of Information Act - Electronic Reading Room - UAP/UFO Files',
 };
 
