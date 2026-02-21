@@ -193,7 +193,7 @@ export default function Home() {
     return () => clearInterval(interval);
   }, []);
 
-  const CA = 'GoctGHWWBViKRKKUoqQrVvrK3JQdvo1KTEQE1CSopump';
+  const CA = 'E2Mwd4541yoWr416hK6wHh89Xv2C1zVjGZxXyLYzpump';
   const [copied, setCopied] = useState(false);
 
   const copyCA = async () => {
